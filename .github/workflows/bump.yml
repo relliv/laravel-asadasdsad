@@ -97,6 +97,13 @@ jobs:
                         sha: context.sha // Mevcut commit SHA
                       });
 
+                      // Güncellemeleri commit et
+                      await exec('git add package.json pnpm-lock.yaml');
+                      await exec(`git commit -m "chore: update dependencies on ${dateString}"`);
+
+                      // Commit'leri push et
+                      await exec(`git push origin ${branchName}`);
+
                       const { repo, owner } = context.repo;
                       const result = await github.rest.pulls.create({
                         title: `Update Dependencies [${dateString}]`,
