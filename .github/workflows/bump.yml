@@ -83,10 +83,10 @@ jobs:
               with:
                   script: |
                       DATE=$(date +'%Y-%m-%d')
-                      BRANCH_NAME="bump/deps-${DATE}"
+                      BRANCH_NAME="bump/deps-$DATE"
                       const { repo, owner } = context.repo;
                       const result = await github.rest.pulls.create({
-                        title: 'Update Dependencies [${DATE}]',
+                        title: 'Update Dependencies [$DATE]',
                         owner,
                         repo,
                         head: '${{ github.ref_name }}',
