@@ -89,6 +89,14 @@ jobs:
                       const dateString = `${year}-${month}-${day}`;
                       const branchName = `update/update-deps-${dateString}`;
 
+                      // Önce branch'in var olup olmadığını kontrol et, yoksa oluştur
+                      await github.rest.git.createRef({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        ref: `refs/heads/${branchName}`, // Branch ref
+                        sha: context.sha // Mevcut commit SHA
+                      });
+
                       const { repo, owner } = context.repo;
                       const result = await github.rest.pulls.create({
                         title: `Update Dependencies [${dateString}]`,
