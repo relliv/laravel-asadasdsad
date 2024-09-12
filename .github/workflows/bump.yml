@@ -94,6 +94,7 @@ jobs:
                   fi
 
                   # Fetch changes from remote and merge
+                  git pull
                   git fetch origin
                   git merge origin/main || exit 1
 
