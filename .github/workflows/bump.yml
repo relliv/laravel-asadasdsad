@@ -91,7 +91,7 @@ jobs:
 
                       const { repo, owner } = context.repo;
                       const result = await github.rest.pulls.create({
-                        title: 'Update Dependencies [${dateString}]',
+                        title: `Update Dependencies [${dateString}]`,
                         owner,
                         repo,
                         head: ${branchName},
