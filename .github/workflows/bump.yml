@@ -98,7 +98,6 @@ jobs:
                   git merge origin/main || exit 1
 
                   # Make changes (example: update dependencies)
-                  pnpm install --package-lock-only
                   git add package.json pnpm-lock.yaml
                   git commit -m "chore: update dependencies on $DATE" || echo "No changes to commit"
 
