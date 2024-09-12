@@ -78,19 +78,35 @@ jobs:
                   git config --global user.name "${{ github.actor }}-ci-automation"
                   git config --global user.email "${{ env.GITHUB_GIT_EMAIL }}"
 
-            - name: 🌿 Create a new branch
+            - name: 🛠️ Update dependencies and handle branch
+              id: update-branch
               run: |
-                  NEW_BRANCH="update/bump-dependency-versions-$(date +'%d-%m-%Y')"
-                  git checkout -b "$NEW_BRANCH"
-                  echo "::set-output name=new_branch::$NEW_BRANCH"
+                  DATE=$(date +'%Y-%m-%d')
+                  BRANCH_NAME="update/update-deps-$DATE"
 
-            - name: 🔍 Check for changes and commit
-              run: |
-                  git diff --quiet || git commit -am "Update dependencies"
+                  # Check if branch exists and create or switch to it
+                  if git show-ref --quiet refs/heads/$BRANCH_NAME; then
+                    echo "Branch $BRANCH_NAME already exists."
+                    git checkout $BRANCH_NAME
+                  else
+                    echo "Creating branch $BRANCH_NAME."
+                    git checkout -b $BRANCH_NAME
+                  fi
 
-            - name: 🚀 Push changes
-              if: success()
-              run: git push --set-upstream origin ${{ steps.create_branch.outputs.new_branch }}
+                  # Fetch changes from remote and merge
+                  git fetch origin
+                  git merge origin/main || exit 1
+
+                  # Make changes (example: update dependencies)
+                  pnpm install
+                  git add package.json pnpm-lock.yaml
+                  git commit -m "chore: update dependencies on $DATE" || echo "No changes to commit"
+
+                  # Push changes to remote and set upstream branch
+                  git push --set-upstream origin $BRANCH_NAME || exit 1
+
+                  # Output the branch name for use in the next step
+                  echo "new_branch=$BRANCH_NAME" >> $GITHUB_ENV
 
             - name: 🔀 Create Pull Request
               run: gh pr create -B ${{ steps.create_branch.outputs.new_branch }} -H main --title 'Merge ${{ steps.create_branch.outputs.new_branch }} into main' --body 'Created by Github action'
