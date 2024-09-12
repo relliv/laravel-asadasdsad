@@ -114,21 +114,27 @@ jobs:
                         }
                       }
 
-                      // Checkout the new branch
-                      await exec(`git checkout ${branchName}`);
-                      // Update dependencies (example command, adjust as needed)
-                      await exec('pnpm install --package-lock-only');
+                      // Return the branch name to use in the next step
+                      return branchName;
+                      `;
 
-                      // Commit the changes
-                      await exec('git add package.json pnpm-lock.yaml');
-                      await exec(`git commit -m "chore: update dependencies on ${dateString}"`);
+            - name: 🌐 Checkout code and update dependencies
+              run: |
+                  git checkout ${{ steps.create-pull-request.outputs.branchName }}
+                  pnpm install --package-lock-only
+                  git add package.json pnpm-lock.yaml
+                  git commit -m "chore: update dependencies on ${{ steps.create-pull-request.outputs.branchName }}"
+                  git push origin ${{ steps.create-pull-request.outputs.branchName }}
 
-                      // Push changes to the branch
-                      await exec(`git push origin ${branchName}`);
+            - name: 🌿 Create pull request
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const branchName = '${{ steps.create-pull-request.outputs.branchName }}';
+                      const { repo, owner } = context.repo;
 
-                      // Create the pull request
                       const result = await github.rest.pulls.create({
-                        title: `Update Dependencies [${dateString}]`,
+                        title: `Update Dependencies [${branchName}]`,
                         owner,
                         repo,
                         head: branchName,
@@ -139,7 +145,6 @@ jobs:
                         ].join('\n')
                       });
 
-                      // Add labels to the pull request
                       await github.rest.issues.addLabels({
                         owner,
                         repo,
