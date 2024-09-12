@@ -90,8 +90,6 @@ jobs:
                   else
                     echo "Creating branch $BRANCH_NAME."
                     git checkout -b $BRANCH_NAME
-                    # Make changes (example: update dependencies)
-                    pnpm install --package-lock-only
                     git add package.json pnpm-lock.yaml
                     git commit -m "chore: update dependencies on $DATE"
                     git push origin $BRANCH_NAME || exit 1
