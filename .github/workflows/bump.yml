@@ -78,22 +78,33 @@ jobs:
                   git config --global user.name "${{ github.actor }}-ci-automation"
                   git config --global user.email "${{ env.GITHUB_GIT_EMAIL }}"
 
-            - name: 🛠️ Update dependencies and create branch
+            - name: 🛠️ Update dependencies and handle branch
               id: update-branch
               run: |
                   DATE=$(date +'%Y-%m-%d')
                   BRANCH_NAME="update/update-deps-$DATE"
 
-                  # Check if branch exists
+                  # Check if branch exists and create or switch to it
                   if git show-ref --quiet refs/heads/$BRANCH_NAME; then
                     echo "Branch $BRANCH_NAME already exists."
+                    git checkout $BRANCH_NAME
                   else
                     echo "Creating branch $BRANCH_NAME."
                     git checkout -b $BRANCH_NAME
-                    git add package.json pnpm-lock.yaml
-                    git commit -m "chore: update dependencies on $DATE"
-                    git push origin $BRANCH_NAME || exit 1
                   fi
+
+                  # Fetch changes from remote and merge
+                  git fetch origin
+                  git merge origin/main || exit 1
+
+                  # Make changes (example: update dependencies)
+                  pnpm install --package-lock-only
+                  git add package.json pnpm-lock.yaml
+                  git commit -m "chore: update dependencies on $DATE" || echo "No changes to commit"
+
+                  # Push changes to remote
+                  git push --set-upstream origin $BRANCH_NAME || exit 1
+
                   echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
             - name: 🌿 Create Pull Request
