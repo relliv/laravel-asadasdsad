@@ -82,7 +82,7 @@ jobs:
                   fi
 
                   # Fetch changes from remote main and merge
-                  git fetch origin main
+                  git fetch origin main --allow-unrelated-histories
                   git merge origin/main || exit 1
 
                   # Output the branch name for use in the next step
