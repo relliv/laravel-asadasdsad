@@ -81,10 +81,6 @@ jobs:
                     git checkout -b $BRANCH_NAME
                   fi
 
-                  # Fetch changes from remote main and merge
-                  git pull origin main
-                  git merge origin/main || exit 1
-
                   # Output the branch name for use in the next step
                   echo "new_branch=$BRANCH_NAME" >> $GITHUB_ENV
 
