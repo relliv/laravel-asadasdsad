@@ -113,4 +113,4 @@ jobs:
             - name: 🔀 Create Pull Request
               run: gh pr create -B main -H "${{ steps.create_branch.outputs.new_branch }}" --title "Merge ${{ steps.create_branch.outputs.new_branch }} into main" --body "Created by Github action"
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITHUB_TOKEN: ${{ secrets.ACTION_WORKFLOW_GITHUB_TOKEN }}
