@@ -93,6 +93,9 @@ jobs:
             - name: 🏗 Build Frontend with Vite
               run: pnpm build
 
+            - name: 🧪 Check Changes
+              run: git diff --exit-code || (echo "No changes to commit" && exit 0)
+
             - name: 👤 Set up Git user
               run: |
                   git config --global user.name "${{ github.actor }}-ci-automation"
