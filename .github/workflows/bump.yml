@@ -81,7 +81,7 @@ jobs:
                     git checkout -b $BRANCH_NAME
                   fi
 
-                  # Output the branch name for use in the next step
+                  # Output the branch name for use in the next steps
                   echo "new_branch=$BRANCH_NAME" >> $GITHUB_ENV
 
             - name: 🚀 Bump and Install Dependencies
@@ -98,10 +98,11 @@ jobs:
                   git config --global user.name "${{ github.actor }}-ci-automation"
                   git config --global user.email "${{ env.GITHUB_GIT_EMAIL }}"
 
-            - name: 🛠️ Update dependencies and handle branch
+            - name: 🛠️ Add changes to commit
               id: update-branch
               run: |
-                  git add .
+                  # Add changes to commit
+                  git add composer.lock package.json pnpm-lock.yaml
                   git commit -m "chore: update dependencies on $DATE" || echo "No changes to commit"
 
                   # Push changes to remote, force with lease for safety
