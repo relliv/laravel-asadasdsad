@@ -94,16 +94,22 @@ jobs:
               run: pnpm build
 
             - name: 🧪 Check Changes
-              run: git diff --exit-code || (echo "No changes to commit" && exit 0)
+              id: check_changes
+              run: |
+                  git diff --exit-code && echo "changes=false" >> $GITHUB_OUTPUT || echo "changes=true" >> $GITHUB_OUTPUT
 
             - name: 👤 Set up Git user
+              if: steps.check_changes.outputs.changes == 'true'
               run: |
                   git config --global user.name "${{ github.actor }}-ci-automation"
                   git config --global user.email "${{ env.GITHUB_GIT_EMAIL }}"
 
             - name: 🛠️ Add changes to commit
+              if: steps.check_changes.outputs.changes == 'true'
               id: update-branch
               run: |
+                  DATE=$(date +'%Y-%m-%d')
+
                   # Add changes to commit
                   git add composer.lock package.json pnpm-lock.yaml
                   git commit -m "chore: update dependencies on $DATE" || echo "No changes to commit"
@@ -112,6 +118,7 @@ jobs:
                   git push --force-with-lease origin $BRANCH_NAME || exit 1
 
             - name: 🔀 Create Pull Request
-              run: gh pr create -B main -H "${{ steps.create_branch.outputs.new_branch }}" --title "Merge ${{ steps.create_branch.outputs.new_branch }} into main" --body "Created by Github action"
+              if: steps.check_changes.outputs.changes == 'true'
+              run: gh pr create -B main --title "Update dependencies" --body "Created by Github action"
               env:
                   GITHUB_TOKEN: ${{ secrets.ACTION_WORKFLOW_GITHUB_TOKEN }}
