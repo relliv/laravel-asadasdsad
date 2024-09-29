@@ -109,6 +109,6 @@ jobs:
                   echo "new_branch=$BRANCH_NAME" >> $GITHUB_ENV
 
             - name: 🔀 Create Pull Request
-              run: gh pr create -B ${{ steps.create_branch.outputs.new_branch }} -H main --title 'Merge ${{ steps.create_branch.outputs.new_branch }} into main' --body 'Created by Github action'
+              run: gh pr create -B main -H "${{ steps.create_branch.outputs.new_branch }}" --title "Merge ${{ steps.create_branch.outputs.new_branch }} into main" --body "Created by Github action"
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
