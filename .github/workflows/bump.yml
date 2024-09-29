@@ -64,22 +64,8 @@ jobs:
                   path: vendor
                   key: ${{ runner.OS }}-vendor-${{ hashFiles('**/composer.lock') }}
 
-            - name: 🚀 Bump and Install Dependencies
-              run: |
-                  chmod +x ./.scripts/local/bump.sh
-                  ./.scripts/local/bump.sh
-              shell: bash
-
-            - name: 🏗 Build Frontend with Vite
-              run: pnpm build
-
-            - name: 👤 Set up Git user
-              run: |
-                  git config --global user.name "${{ github.actor }}-ci-automation"
-                  git config --global user.email "${{ env.GITHUB_GIT_EMAIL }}"
-
-            - name: 🛠️ Update dependencies and handle branch
-              id: update-branch
+            - name: 🛠️ Create branch
+              id: create_branch
               run: |
                   DATE=$(date +'%Y-%m-%d')
                   BRANCH_NAME="update/update-deps-$DATE"
@@ -99,16 +85,31 @@ jobs:
                   git fetch origin main
                   git merge origin/main || exit 1
 
-                  # Make changes (example: update dependencies)
-                  pnpm install
-                  git add package.json pnpm-lock.yaml
+                  # Output the branch name for use in the next step
+                  echo "new_branch=$BRANCH_NAME" >> $GITHUB_ENV
+
+            - name: 🚀 Bump and Install Dependencies
+              run: |
+                  chmod +x ./.scripts/local/bump.sh
+                  ./.scripts/local/bump.sh
+              shell: bash
+
+            - name: 🏗 Build Frontend with Vite
+              run: pnpm build
+
+            - name: 👤 Set up Git user
+              run: |
+                  git config --global user.name "${{ github.actor }}-ci-automation"
+                  git config --global user.email "${{ env.GITHUB_GIT_EMAIL }}"
+
+            - name: 🛠️ Update dependencies and handle branch
+              id: update-branch
+              run: |
+                  git add .
                   git commit -m "chore: update dependencies on $DATE" || echo "No changes to commit"
 
                   # Push changes to remote, force with lease for safety
                   git push --force-with-lease origin $BRANCH_NAME || exit 1
-
-                  # Output the branch name for use in the next step
-                  echo "new_branch=$BRANCH_NAME" >> $GITHUB_ENV
 
             - name: 🔀 Create Pull Request
               run: gh pr create -B main -H "${{ steps.create_branch.outputs.new_branch }}" --title "Merge ${{ steps.create_branch.outputs.new_branch }} into main" --body "Created by Github action"
