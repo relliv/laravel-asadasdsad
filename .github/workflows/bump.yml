@@ -85,16 +85,18 @@ jobs:
                   BRANCH_NAME="update/update-deps-$DATE"
 
                   # Check if branch exists and create or switch to it
-                  if git show-ref --quiet refs/heads/$BRANCH_NAME; then
-                    echo "Branch $BRANCH_NAME already exists."
+                  if git ls-remote --exit-code --heads origin $BRANCH_NAME; then
+                    echo "Branch $BRANCH_NAME already exists on remote."
+                    git fetch origin $BRANCH_NAME
                     git checkout $BRANCH_NAME
+                    git reset --hard origin/$BRANCH_NAME
                   else
                     echo "Creating branch $BRANCH_NAME."
                     git checkout -b $BRANCH_NAME
                   fi
 
-                  # Fetch changes from remote and merge
-                  git fetch origin
+                  # Fetch changes from remote main and merge
+                  git fetch origin main
                   git merge origin/main || exit 1
 
                   # Make changes (example: update dependencies)
@@ -102,8 +104,8 @@ jobs:
                   git add package.json pnpm-lock.yaml
                   git commit -m "chore: update dependencies on $DATE" || echo "No changes to commit"
 
-                  # Push changes to remote and set upstream branch
-                  git push --set-upstream origin $BRANCH_NAME || exit 1
+                  # Push changes to remote, force with lease for safety
+                  git push --force-with-lease origin $BRANCH_NAME || exit 1
 
                   # Output the branch name for use in the next step
                   echo "new_branch=$BRANCH_NAME" >> $GITHUB_ENV
